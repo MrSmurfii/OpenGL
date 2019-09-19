@@ -11,11 +11,16 @@ uniform mat4 u_World;
 out vec2 f_TexCoord;
 out vec3 f_Normal;
 out vec3 f_World;
+out float f_CameraDepth;
 
 void main() 
 {
     gl_Position = u_Projection * u_View * u_World * vec4(a_Position, 1.0);
+
+	vec4 cameraSpacePosition = u_View * u_World * vec4(a_Position, 1.0);
+	f_CameraDepth = -cameraSpacePosition.z;
+
+	f_World = (u_World * vec4(a_Position, 1.0)).xyz;
 	f_Normal = normalize((u_World * vec4(a_Normal, 0.0)).xyz);
     f_TexCoord = a_TexCoord;
-	f_World = (u_World * vec4(a_Position, 1.0)).xyz;
 }

@@ -13,6 +13,9 @@
 #include "FrameBuffer.h"
 #include "Screen.h"
 #include "CubeMap.h"
+#include "PointLight.h"
+#include "SpotLight.h"
+#include "Sphere.h"
 
 bool shouldQuit = false;
 bool keyState[GLFW_KEY_LAST] = { false };
@@ -29,8 +32,16 @@ Texture crate;
 Texture cheryl;
 Material defaultMaterial;
 Material skyboxMaterial;
+Material lightSourceMaterial;
+Material reflectionMaterial;
 Transform playerTransform;
 CubeMap skyboxTexture;
+PointLight pointLight;
+PointLight pointLight_2; 
+SpotLight spotLight;
+Sphere sphere;
+Transform sphereTransform;
+
 
 const float cubeVertexData[] = {
 	//Front face
@@ -87,12 +98,12 @@ const unsigned int cubeIndexData[] = {
 };
 
 const char* skyboxImages[] = {
-	"Res/Skybox/midnight-silence_ft.tga",
-	"Res/Skybox/midnight-silence_bk.tga",
-	"Res/Skybox/midnight-silence_up.tga", 
-	"Res/Skybox/midnight-silence_dn.tga",  
-	"Res/Skybox/midnight-silence_rt.tga", 
-	"Res/Skybox/midnight-silence_lf.tga",  
+	"Res/Skybox/alps_ft.tga",
+	"Res/Skybox/alps_bk.tga",
+	"Res/Skybox/alps_up.tga", 
+	"Res/Skybox/alps_dn.tga",  
+	"Res/Skybox/alps_rt.tga", 
+	"Res/Skybox/alps_lf.tga",  
 };
 
 
@@ -131,18 +142,21 @@ void OnMouseButton(GLFWwindow* window, int button, int action, int mods) {
 void RenderTriangle(const Transform& transform) {
 	triangleMesh.Bind();
 	defaultMaterial.Set("u_World", transform.GetMatrix());
+	defaultMaterial.Use();
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void RenderQuad(const Transform& transform) {
 	quadMesh.Bind();
 	defaultMaterial.Set("u_World", transform.GetMatrix());
+	defaultMaterial.Use();
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void RenderCube(const Transform& transform) {
 	cubeMesh.Bind();
 	defaultMaterial.Set("u_World", transform.GetMatrix());
+	defaultMaterial.Use();
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
@@ -158,6 +172,12 @@ void RenderFullScreenQuad(){
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void RenderLightSource(const PointLight& light){
+	lightSourceMaterial.Set("u_World", Transform(light.position, quat_identity, glm::vec3(0.2f)).GetMatrix());
+	lightSourceMaterial.Set("u_Color", light.color);
+	cubeMesh.Bind();
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+}
 
 
 void RenderScene(bool renderPlayer) {
@@ -167,7 +187,7 @@ void RenderScene(bool renderPlayer) {
 	float time = glfwGetTime();
 	
 
-	RenderCube(Transform(glm::vec3(0.f, -2.f, 0.f), quat_identity, glm::vec3(50.f, 0.4f, 50.f)));
+	RenderCube(Transform(glm::vec3(2.f, -2.f, 2.f), quat_identity, glm::vec3(50.f, 0.4f, 50.f)));
 	// child and babies
 	{
 		Transform baseTrasform;
@@ -188,25 +208,30 @@ void RenderScene(bool renderPlayer) {
 	}
 	 // Saw
 	{
-		Transform baseTransform;
-		baseTransform.position = glm::vec3(5.f, 4.f, 3.f);
-		baseTransform.rotation = glm::angleAxis(time, normalize(glm::vec3(0.4, -0.5, 1.f)));
+		Transform BaseTransform;
+		BaseTransform.position = glm::vec3(5.f, 2.f, 1.f);
+		BaseTransform.rotation = glm::angleAxis(time, glm::normalize(glm::vec3(0.5f, -0.4f, 1.f)));
 
-		int triangleAmount = 50;
-		for (int i = 0; i < triangleAmount; i++) {
+		RenderCube(BaseTransform);
 
-			float angleInc = glm::pi<float>() * 2.f / triangleAmount;
-			float angle = time + angleInc * i;
+		int NumTriangles = 30;
+		for (int i = 0; i < NumTriangles; ++i)
+		{
+			float AngleInc = (glm::pi<float>() * 2.f) / NumTriangles;
+			float Angle = time + AngleInc * i;
+			float SawAngle = time * 5.f + AngleInc * i;
 
-			Transform childTransform;
-			childTransform.position = glm::vec3(2.5f, sin(time + angleInc * i * 2.f), 0.f);
+			Transform ChildTransform;
+			ChildTransform.position = glm::vec3(2.5f, sin(time * 0.6f + AngleInc * i * 2.f) * 1.f, 0.f);
+			ChildTransform.scale = glm::vec3(0.5f);
 
-			Transform spinTransform;
-			spinTransform.rotation = glm::angleAxis(angle, glm::vec3(0.f, 1.f, 0.f));
+			Transform SpinTransform;
+			SpinTransform.rotation = glm::angleAxis(Angle, glm::vec3(0.f, 1.f, 0.f));
 
-			Transform sawTransform;
-			sawTransform.rotation = glm::angleAxis(time * i, normalize(glm::vec3(0.f, 0.f, 1.f)));
+			Transform SawTransform;
+			SawTransform.rotation = glm::angleAxis(SawAngle, glm::vec3(0.f, 0.f, 1.f));
 
+			RenderCube(BaseTransform * SpinTransform * ChildTransform * SawTransform);
 		}
 
 	}
@@ -228,11 +253,63 @@ void RenderScene(bool renderPlayer) {
 
 			currentTransform = currentTransform * delta;
 			RenderCube(currentTransform);
+
 		}
 	}
 
-	RenderSkybox();
+	{
+		glm::vec3 rotationAxis = glm::vec3(cos(time * 0.62f), sin(time * 0.9f) * 2.f, cos(-time * 0.5f));
+		rotationAxis = normalize(rotationAxis);
+		Transform baseTransform;
+		baseTransform.position = glm::vec3(3.f, 2.f, 15.f);
+		baseTransform.rotation = glm::angleAxis(time, rotationAxis);
+		RenderCube(baseTransform);
+		
+		static Transform childTransform = Transform(glm::vec3(2.5f, 0.f, 0.f), quat_identity, glm::vec3(0.7f));
+		
+		//childTransform.position = glm::vec3(2.5f, 0.f, 0.f);
+		//childTransform.scale = glm::vec3(0.7f);
+		//childTransform.rotation = glm::angleAxis(time, glm::vec3(0.f, 1.f, 0.f));
 
+		static bool attachedToCamera = false;
+
+		if (IsKeyPressed(GLFW_KEY_T)) {
+			
+			if(!attachedToCamera)
+			{
+				Transform temp;
+				temp = baseTransform * childTransform;
+				Transform cameraSpace = camera.GetTransform().Inverse() * temp;
+
+				childTransform = camera.GetTransform().Inverse() * baseTransform * childTransform;
+
+				attachedToCamera = true;
+			}
+
+			RenderCube(camera.GetTransform() * childTransform);
+		}
+		else {
+			if(attachedToCamera) {
+				Transform temp;
+				temp = camera.GetTransform() * childTransform;
+				Transform boxSpace = baseTransform.Inverse() * temp;
+
+				childTransform = boxSpace;
+
+				attachedToCamera = false;
+			}
+			RenderCube(baseTransform * childTransform);
+		}
+
+	}
+
+	RenderCube(Transform(glm::vec3(0.f, 0.f, -15.f), quat_identity, glm::vec3(20.f, 20.f, 0.05f)));
+	RenderSkybox();
+	RenderLightSource(pointLight);
+	RenderLightSource(pointLight_2);
+
+
+	sphere.DrawSphere(sphereTransform, reflectionMaterial);
 	//Render Player
 	if (renderPlayer) {
 		cheryl.Bind();
@@ -245,7 +322,7 @@ int main() {
 	glfwInit();
 
 	GLFWwindow* window;
-	window = glfwCreateWindow(screenWidth, screenHeight, "This is SPARTAAA!", nullptr, nullptr);
+	window = glfwCreateWindow(screenWidth, screenHeight, "This is OpenGL!", nullptr, nullptr);
 
 	glfwSetKeyCallback(window, OnKeyEvent);
 	glfwSetCursorPosCallback(window, OnCursorMove);
@@ -277,14 +354,22 @@ int main() {
 
 	triangleMesh.LoadVerts(triData, sizeof(triData), nullptr, 0);
 
+
 	cheryl.LoadFile("Res/img_cheryl.jpg");
 	crate.LoadFile("Res/crate.png");
 	cheryl.Bind();
 
+	reflectionMaterial.LoadFiles("Res/Shader/reflection.vert", "Res/Shader/reflection.frag");
+
 	defaultMaterial.LoadFiles("Res/Shader/default.vert", "Res/Shader/default.frag");
-	defaultMaterial.Set("u_LightBuffer", 2);
+	defaultMaterial.Set("u_DirectionalLight.shadowBuffer", 2);
 	defaultMaterial.Use();
 
+	// Sphere
+	sphereTransform.position = glm::vec3(20.f, 5.f, 20.f);
+	sphere.SetSphereSize(5.f, 36, 18);
+	sphere.LoadSphere();
+	
 
 	Material postProcessMaterial;
 	postProcessMaterial.LoadFiles("Res/Shader/post_process.vert", "Res/Shader/post_process.frag");
@@ -292,6 +377,7 @@ int main() {
 	postProcessMaterial.Set("u_FrameDepth", 1);
 
 	skyboxMaterial.LoadFiles("Res/Shader/Skybox.vert", "Res/Shader/Skybox.frag");
+	lightSourceMaterial.LoadFiles("Res/Shader/light_source.vert", "Res/Shader/light_source.frag");
 
 	skyboxTexture.LoadFiles(skyboxImages);
 
@@ -299,13 +385,30 @@ int main() {
 
 	camera.position = glm::vec3(0.f, 5.f, 5.f);
 
-	glm::vec3 lightDirection = glm::normalize(glm::vec3(-1.f, -1.f, -1.f));
-	defaultMaterial.Set("u_LightDirection", lightDirection);
+	glm::vec3 lightDirection = glm::normalize(glm::vec3(-1.f, -0.55f, 0.35f));
+	defaultMaterial.Set("u_DirectionalLight.direction", lightDirection);
+	defaultMaterial.Set("u_DirectionalLight.color", glm::vec3(0.9f, 0.9f, 1.f));
+
+	pointLight.position = glm::vec3(0.f, 1.f, 0.f);
+	pointLight.color = glm::vec3(1.f, 0.7f, 0.4f);
+	pointLight.radius = 10.f;
+	pointLight.UploadToMaterial(0, defaultMaterial);
+	
+	pointLight_2.position = glm::vec3(0.f, 1.f, 0.f);
+	pointLight_2.color = glm::vec3(0.f, 0.2f, 1.f);
+	pointLight_2.radius = 20.f;
+	pointLight_2.UploadToMaterial(1, defaultMaterial);
+
+	spotLight.position = glm::vec3(0.f, 2.f, 10.f);
+	spotLight.direction = glm::vec3(0.f, 0.f, -1.f);
+	spotLight.color = glm::vec3(0.2f, 1.f, 0.2f);
+	spotLight.angle = glm::radians(30.f);
+	spotLight.radius = 40.f;
+	spotLight.UploadToMaterial(defaultMaterial);
 
 	glm::mat4 perspective;
 	perspective = glm::perspective(glm::radians(60.f), ratio, 0.05f, 150.f);
 	defaultMaterial.Set("u_Projection", perspective);
-
 
 	glEnable(GL_DEPTH_TEST);
 	float lastFrameTime = 0.f;
@@ -360,39 +463,58 @@ int main() {
 		}
 		playerTransform.position = camera.position;
 		playerTransform.rotation = glm::quatLookAt(camera.GetForwardVector(), glm::vec3(0.f, 1.f, 0.f));
+		reflectionMaterial.Set("cameraPosition", camera.position);
+
+		if (IsKeyPressed(GLFW_KEY_F)) {
+			spotLight.position = camera.position;
+			spotLight.direction = camera.GetForwardVector();
+			spotLight.UploadToMaterial(defaultMaterial);
+		}
 
 		defaultMaterial.Set("u_EyePosition", camera.position);
 		defaultMaterial.Set("u_View", camera.GetViewMatrix());
 
-
+		pointLight.position = glm::vec3(sin(currentTime) * 2.f, 0.2f, glm::cos(currentTime) * 2.f);
+		pointLight.color = glm::vec3(glm::sin(currentTime), glm::cos(currentTime), glm::sin(-currentTime));
+		pointLight.UploadToMaterial(0, defaultMaterial);
 
 		// Clear the screen
 		glClearColor(0.1f, 0.5f, 0.3f, 1.f);
 
 		// Render the light pass
-		lightBuffer.Bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		defaultMaterial.Set("u_Projection", lightProjection);
 		defaultMaterial.Set("u_View", lightView);
+		
+		lightSourceMaterial.Set("u_Projection", lightProjection);
+		lightSourceMaterial.Set("u_View", lightView);
 
+		lightBuffer.Bind();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		RenderScene(true);
 		
 		lightBuffer.Unbind();
 
-		frameBuffer.Bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		//Render to frame buffer
+		reflectionMaterial.Set("u_Projection", perspective);
+		reflectionMaterial.Set("u_View", camera.GetViewMatrix());
 
 		defaultMaterial.Set("u_Projection", perspective);
 		defaultMaterial.Set("u_View", camera.GetViewMatrix());
-		defaultMaterial.Set("u_LightViewProjection", lightProjection * lightView);
+		defaultMaterial.Set("u_DirectionalLight.viewProjection", lightProjection * lightView);
+
+		lightSourceMaterial.Set("u_Projection", perspective);
+		lightSourceMaterial.Set("u_View", camera.GetViewMatrix());
 
 		skyboxMaterial.Set("u_Projection", perspective);
 		skyboxMaterial.Set("u_View", camera.GetViewMatrix());
 
+
 		lightBuffer.depthTexture.Bind(2);
+
+		frameBuffer.Bind();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		RenderScene(false);
 		frameBuffer.Unbind();
@@ -412,6 +534,7 @@ int main() {
 
 	}
 	glfwTerminate();
+
 	////
 	return 0;
 }

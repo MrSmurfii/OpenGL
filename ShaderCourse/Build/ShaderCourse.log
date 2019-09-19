@@ -1,6 +1,6 @@
 ﻿  main.cpp
-D:\Courses\Shader\ShaderCourse\ShaderCourse\Code\main.cpp(167,13): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Courses\Shader\ShaderCourse\ShaderCourse\Code\main.cpp(331,21): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Courses\Shader\ShaderCourse\ShaderCourse\Code\main.cpp(342,30): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
-D:\Courses\Shader\ShaderCourse\ShaderCourse\Code\main.cpp(343,32): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
-  ShaderCourse.vcxproj -> D:\Courses\Shader\ShaderCourse\ShaderCourse\Binary\CoolShieet.exe
+D:\Git\OpenGL\ShaderCourse\Code\main.cpp(187,13): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Git\OpenGL\ShaderCourse\Code\main.cpp(434,21): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Git\OpenGL\ShaderCourse\Code\main.cpp(445,30): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+D:\Git\OpenGL\ShaderCourse\Code\main.cpp(446,32): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+  ShaderCourse.vcxproj -> D:\Git\OpenGL\ShaderCourse\Binary\CoolShieet.exe

@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "Transform.h"
 
 class Camera {
 public:
@@ -13,4 +14,5 @@ public:
 	glm::mat4 GetViewMatrix();
 	void AddYaw(float yawAngle);
 	void AddPitch(float pitchAngle);
+	Transform GetTransform() const;
 };

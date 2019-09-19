@@ -26,3 +26,13 @@ void Camera::AddPitch(float pitchAngle){
 	pitch += pitchAngle;
 	pitch = glm::clamp(pitch, -85.f, 85.f);
 }
+
+Transform Camera::GetTransform() const {
+	Transform result;
+	result.position = position;
+	glm::quat yawQuat = glm::angleAxis(glm::radians(yaw), glm::vec3(0.f, 1.f, 0.f));
+	glm::quat pitchQuat = glm::angleAxis(glm::radians(pitch), glm::vec3(1.f, 0.f, 0.f));
+	result.rotation = yawQuat * pitchQuat;
+
+	return result;
+}

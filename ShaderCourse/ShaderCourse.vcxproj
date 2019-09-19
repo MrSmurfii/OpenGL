@@ -137,6 +137,9 @@
     <ClCompile Include="Code\main.cpp" />
     <ClCompile Include="Code\Material.cpp" />
     <ClCompile Include="Code\Mesh.cpp" />
+    <ClCompile Include="Code\PointLight.cpp" />
+    <ClCompile Include="Code\Sphere.cpp" />
+    <ClCompile Include="Code\SpotLight.cpp" />
     <ClCompile Include="Code\Texture.cpp" />
     <ClCompile Include="Code\Transform.cpp" />
   </ItemGroup>
@@ -146,7 +149,10 @@
     <ClInclude Include="Code\FrameBuffer.h" />
     <ClInclude Include="Code\Material.h" />
     <ClInclude Include="Code\Mesh.h" />
+    <ClInclude Include="Code\PointLight.h" />
     <ClInclude Include="Code\Screen.h" />
+    <ClInclude Include="Code\Sphere.h" />
+    <ClInclude Include="Code\SpotLight.h" />
     <ClInclude Include="Code\Texture.h" />
     <ClInclude Include="Code\Transform.h" />
   </ItemGroup>

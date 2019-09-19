@@ -57,25 +57,30 @@ void Material::LoadFiles(const char* vertexPath, const char* fragmentPath) {
 	}
 }
 
-void Material::Use() {
+void Material::Use() const {
 	glUseProgram(programHandle);
 }
 
-void Material::Set(const char* name, const glm::mat4& value){
+void Material::Set(const char* name, const glm::mat4& value) const {
 	Use();
 	GLuint location = glGetUniformLocation(programHandle, name);
 	glUniformMatrix4fv(location, 1, false, glm::value_ptr(value));
 }
 
-void Material::Set(const char* name, const glm::vec3& value){
+void Material::Set(const char* name, const glm::vec3& value) const {
 	Use();
 	GLuint location = glGetUniformLocation(programHandle, name);
 	glUniform3fv(location, 1, glm::value_ptr(value));
 }
 
-void Material::Set(const char* name, const int value)
-{
+void Material::Set(const char* name, const int value) const {
 	Use();
 	GLuint location = glGetUniformLocation(programHandle, name);
 	glUniform1i(location, value);
+}
+
+void Material::Set(const char* name, const float value) const {
+	Use();
+	GLuint location = glGetUniformLocation(programHandle, name);
+	glUniform1f(location, value);
 }

@@ -9,6 +9,9 @@
     <ClCompile Include="Code\Camera.cpp" />
     <ClCompile Include="Code\FrameBuffer.cpp" />
     <ClCompile Include="Code\CubeMap.cpp" />
+    <ClCompile Include="Code\PointLight.cpp" />
+    <ClCompile Include="Code\SpotLight.cpp" />
+    <ClCompile Include="Code\Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Material.h" />
@@ -19,5 +22,8 @@
     <ClInclude Include="Code\FrameBuffer.h" />
     <ClInclude Include="Code\Screen.h" />
     <ClInclude Include="Code\CubeMap.h" />
+    <ClInclude Include="Code\PointLight.h" />
+    <ClInclude Include="Code\SpotLight.h" />
+    <ClInclude Include="Code\Sphere.h" />
   </ItemGroup>
 </Project>

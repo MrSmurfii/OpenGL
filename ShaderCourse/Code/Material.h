@@ -6,9 +6,10 @@ public:
 	GLuint programHandle;
 
 	void LoadFiles(const char* vertexPath, const char* fragmentPath);
-	void Use();
-	void Set(const char* name, const glm::mat4& value);
-	void Set(const char* name, const glm::vec3& value);
-	void Set(const char* name, const int value);
-
+	void Use() const;
+	void Set(const char* name, const glm::mat4& value) const;
+	void Set(const char* name, const glm::vec3& value) const;
+	void Set(const char* name, const int value) const;
+	void Set(const char* name, const float value) const;
+	
 };

@@ -11,6 +11,6 @@ void main()
 	mat4 viewNoTranslate = u_View;
 	viewNoTranslate[3] = vec4(0.0, 0.0, 0.0, 1.0);
     gl_Position = u_Projection * viewNoTranslate * vec4(a_Position, 1.0);
-	gl_Position.z = gl_Position.w - 0.00001;
+	gl_Position.z = gl_Position.w - 0.0001;
 	f_CubeDirection = a_Position;
 }
