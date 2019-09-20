@@ -1,6 +1,0 @@
-﻿  main.cpp
-D:\Git\OpenGL\ShaderCourse\Code\main.cpp(187,13): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Git\OpenGL\ShaderCourse\Code\main.cpp(434,21): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Git\OpenGL\ShaderCourse\Code\main.cpp(445,30): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
-D:\Git\OpenGL\ShaderCourse\Code\main.cpp(446,32): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
-  ShaderCourse.vcxproj -> D:\Git\OpenGL\ShaderCourse\Binary\CoolShieet.exe
